@@ -20,10 +20,13 @@ export default function Navbar({
     >
       <div className="w-full p-8 space-x-6 md:space-x-12 flex items-center justify-between font-tungsten tracking-wide text-2xl uppercase">
         <div className="space-x-12 flex">
-          <h1>Events</h1>
-          <h1>Sponsors</h1>
+          <Link href="/events-2">Events</Link>
+          <a href="#sponsors">Sponsors</a>
         </div>
-        <Link className="justify-end px-6 py-1 rounded-full bg-white text-black" href="/signup">
+        <Link
+          className="justify-end px-6 py-1 rounded-full bg-white text-black"
+          href="/signup"
+        >
           Register
         </Link>
       </div>

@@ -6,6 +6,12 @@ import { useState, useCallback } from "react";
 import { auth } from "@/lib/firebase";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { useRouter } from "next/navigation";
+import {
+  PhoneAuthCredential,
+  updateCurrentUser,
+  updatePhoneNumber,
+  updateProfile,
+} from "firebase/auth";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -88,6 +94,8 @@ export default function SIGNIUPForm() {
         setLoading(false);
         return;
       }
+
+      // TODO: Save Display Name and Phone Number
 
       fetch("/api/login", {
         method: "POST",
@@ -306,14 +314,15 @@ export default function SIGNIUPForm() {
         <button
           className="bg-gradient-to-r from-[#501794] to-[#3E70A1] text-white w-full py-4 mt-4 rounded-lg text-lg font-poppins font-[800] transition-all duration-300 hover:opacity-80 active:opacity-100 focus:outline-2 focus:outline-white focus:outline-offset-2 active:outline-none active:scale-95"
           disabled={loading}
+          onClick={handleSubmit}
         >
           {loading ? <Loader /> : "Sign Up"}
         </button>
         <hr className="mt-4 mb-2 md:mt-8 md:mb-4 border-t border-[#727272]" />
         <p className="text-white text-xs font-poppins font-[700]">
-          By registering you with our{" "}
-          <Link href="/terms" className="text-[#a154ff]">
-            Terms of Service
+          Already Have an Account ?{" "}
+          <Link href="/signin" className="text-[#a154ff]">
+            Sign In
           </Link>
         </p>
       </div>

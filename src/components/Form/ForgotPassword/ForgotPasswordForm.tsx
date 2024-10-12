@@ -3,37 +3,31 @@ import { Poppins } from "next/font/google";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState, useCallback } from "react";
-import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { auth } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
+import { sendPasswordResetEmail } from "firebase/auth";
 
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["800", "700"],
 });
 
-export default function SIGNINForm() {
+export default function ForgotPasswordForm() {
   const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
   const [message, setMessage] = useState<{
     type: "error" | "success";
     message: string;
   } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [signInWithEmailAndPassword] = useSignInWithEmailAndPassword(auth);
-  const router = useRouter();
 
   const handleSubmit = useCallback(async () => {
     setMessage(null);
-    if (!email || !password) {
+    if (!email) {
       setMessage({
         type: "error",
-        message: "Please fill all the fields",
+        message: "Please enter your email address",
       });
       return;
     }
-    // Checking for Email Validation
     const emailRegex = /^[a-zA-Z0-9._%+-]+@nsut\.ac\.in$/;
     if (!emailRegex.test(email)) {
       setMessage({
@@ -44,41 +38,23 @@ export default function SIGNINForm() {
     }
     try {
       setLoading(true);
-      const res = await signInWithEmailAndPassword(email, password);
-      if (res == undefined) {
-        setMessage({
-          type: "error",
-          message: "Invalid Credentials",
-        });
-        setLoading(false);
-        return;
-      }
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${await res.user.getIdToken()}`,
-        },
+
+      await sendPasswordResetEmail(auth, email);
+
+      setMessage({
+        type: "success",
+        message: "Password reset email sent. Please check your inbox.",
       });
-
-      if (response.status === 200) {
-        router.push("/dashboard");
-      }
-
-      setEmail("");
-      setPassword("");
-
       setLoading(false);
-      return;
     } catch (e) {
       console.error(e);
       setMessage({
         type: "error",
-        message: "Invalid Credentials",
+        message: "Failed to send password reset email. Please try again.",
       });
       setLoading(false);
-      return;
     }
-  }, [email, password]);
+  }, [email]);
 
   return (
     <div
@@ -89,10 +65,10 @@ export default function SIGNINForm() {
     >
       <div className="w-full mx-auto max-w-[500px] px-4 transition-all duration-300 ease-in-out">
         <h1 className="text-5xl md:text-[77.71px] md:leading-[116.57px] text-white font-poppins font-[800] uppercase">
-          SIGN IN
+          Forgot Password
         </h1>
         <p className="text-white text-sm mt-2 font-poppins font-[700]">
-          Sign in with email address
+          Enter your email address to reset your password
         </p>
         <div className="group flex items-center bg-[#261046] px-4 py-4 mt-4 rounded-lg text-lg group-hover:bg-[#1F0F2E] focus-within:outline-white focus-within:outline-offset-2 focus-within:outline">
           <svg
@@ -118,55 +94,6 @@ export default function SIGNINForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-        </div>
-        <div className="group flex items-center bg-[#261046] px-4 py-4 mt-4 rounded-lg text-lg group-hover:bg-[#1F0F2E] focus-within:outline-white focus-within:outline-offset-2 focus-within:outline">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            x="0px"
-            y="0px"
-            width="25"
-            height="25"
-            viewBox="0 0 50 50"
-            fill="#A4A4A4"
-          >
-            <path d="M 25 2 C 17.832484 2 12 7.8324839 12 15 L 12 21 L 8 21 C 6.3550302 21 5 22.35503 5 24 L 5 47 C 5 48.64497 6.3550302 50 8 50 L 42 50 C 43.64497 50 45 48.64497 45 47 L 45 24 C 45 22.35503 43.64497 21 42 21 L 38 21 L 38 15 C 38 7.8324839 32.167516 2 25 2 z M 25 4 C 31.086484 4 36 8.9135161 36 15 L 36 21 L 14 21 L 14 15 C 14 8.9135161 18.913516 4 25 4 z M 8 23 L 42 23 C 42.56503 23 43 23.43497 43 24 L 43 47 C 43 47.56503 42.56503 48 42 48 L 8 48 C 7.4349698 48 7 47.56503 7 47 L 7 24 C 7 23.43497 7.4349698 23 8 23 z M 13 34 A 2 2 0 0 0 11 36 A 2 2 0 0 0 13 38 A 2 2 0 0 0 15 36 A 2 2 0 0 0 13 34 z M 21 34 A 2 2 0 0 0 19 36 A 2 2 0 0 0 21 38 A 2 2 0 0 0 23 36 A 2 2 0 0 0 21 34 z M 29 34 A 2 2 0 0 0 27 36 A 2 2 0 0 0 29 38 A 2 2 0 0 0 31 36 A 2 2 0 0 0 29 34 z M 37 34 A 2 2 0 0 0 35 36 A 2 2 0 0 0 37 38 A 2 2 0 0 0 39 36 A 2 2 0 0 0 37 34 z"></path>
-          </svg>
-          <label className="sr-only" htmlFor="password">
-            Password
-          </label>
-          <input
-            id="password"
-            type={showPassword ? "text" : "password"}
-            className="bg-transparent text-white w-full focus:outline-none pl-4"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button
-            className="focus:outline-none"
-            onClick={() => setShowPassword((prev) => !prev)}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#A4A4A4"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              {showPassword ? null : (
-                <>
-                  <path d="M17.94 17.94A10.97 10.97 0 0 1 12 20c-5 0-9.27-3.11-11-8 1.02-2.55 2.83-4.73 5-6.12M1 1l22 22"></path>
-                  <path d="M9.88 9.88A3 3 0 0 0 12 15c1.38 0 2.63-.56 3.54-1.46M21 21l-4.35-4.35"></path>
-                </>
-              )}
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-          </button>
         </div>
         {message && (
           <div
@@ -220,20 +147,14 @@ export default function SIGNINForm() {
           onClick={handleSubmit}
           disabled={loading}
         >
-          {loading ? <Loader /> : "Sign In"}
+          {loading ? <Loader /> : "Reset Password"}
         </button>
         <hr className="mt-4 md:mt-8 border-t border-[#727272]" />
 
         <p className="text-white text-xs font-poppins font-[700] mt-4">
-          Oho New Here ?{" "}
-          <Link href="/signup" className="text-[#a154ff]">
-            Sign Up
-          </Link>
-        </p>
-        <p className="text-white text-xs font-poppins font-[700] mt-4">
-          Weak Memory ?{" "}
-          <Link href="/forgotpassword" className="text-[#a154ff]">
-            Forgot Password
+          Remember your password?{" "}
+          <Link href="/signin" className="text-[#a154ff]">
+            Sign In
           </Link>
         </p>
       </div>
